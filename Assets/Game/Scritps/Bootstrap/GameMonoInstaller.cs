@@ -63,7 +63,7 @@ public class GameMonoInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<MeteorSystem>()
             .AsSingle();
 
-        Container.BindInterfacesAndSelfTo<FireBulletSystem>()
+        Container.BindInterfacesAndSelfTo<TurretSystem>()
             .AsSingle();
     }
 

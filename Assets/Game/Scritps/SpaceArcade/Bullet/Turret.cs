@@ -3,19 +3,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FireSource : IFireSource
+public class Turret : ITurret
 {
     private Rect _gameZoneRect;
     private Transform _fireRoot;
-    private FireBulletModel _model;
+    private TurretModel _model;
     private IGamePool<Transform> _viewPool;
 
     private bool _isDisposed;
     private List<Transform> _activeBullets;
+    private float _fireTimer = 0;
 
-    public event Action<FireSource> OnDispose;
+    public event Action<Turret> OnDispose;
 
-    public FireSource(Rect gameZoneRect, Transform fireRoot, FireBulletModel model, IGamePool<Transform> viewPool)
+    public Turret(Rect gameZoneRect, Transform fireRoot, TurretModel model, IGamePool<Transform> viewPool)
     {
         _isDisposed = false;
         _activeBullets = new List<Transform>();
@@ -33,7 +34,11 @@ public class FireSource : IFireSource
             return;
         }
 
-        SpawnBullet().Forget();
+        if(_fireTimer <= 0)
+        {
+            SpawnBullet().Forget();
+            _fireTimer = _model.FireSpeed;
+        }
     }
 
     public void Update(float deltaTime)
@@ -48,17 +53,21 @@ public class FireSource : IFireSource
             var bullet = _activeBullets[i];
             UpdateBullet(deltaTime, bullet);
         }
+
+        _fireTimer = Mathf.Max(0f, _fireTimer - deltaTime);
     }
 
     public void UpdateBullet(float deltaTime, Transform bulletTransofrm)
     {
+        var bulletModel = _model.BulletModel;
+
         var lastPosition = bulletTransofrm.position;
-        var newPosition = lastPosition + bulletTransofrm.forward * _model.Speed * deltaTime;
+        var newPosition = lastPosition + bulletTransofrm.forward * bulletModel.Speed * deltaTime;
 
         RaycastBulletPath(lastPosition, newPosition, out var hitTarget, out var movePosition);
        
 
-        if(hitTarget != null && hitTarget.TryHit(_model.BulletType, _model.Damage, _model.Speed))
+        if(hitTarget != null && hitTarget.TryHit(bulletModel.BulletType, bulletModel.Damage, bulletModel.Speed))
         {
             RemoveBullet(bulletTransofrm);
             return;
@@ -66,7 +75,7 @@ public class FireSource : IFireSource
 
         bulletTransofrm.position = movePosition;
 
-        if (newPosition.y > _gameZoneRect.yMax + 10f)
+        if (newPosition.z > _gameZoneRect.yMax + 10f)
         {
             RemoveBullet(bulletTransofrm);
             return;

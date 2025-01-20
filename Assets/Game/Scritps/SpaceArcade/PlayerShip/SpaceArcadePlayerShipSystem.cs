@@ -10,7 +10,7 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
 {
     private SpaceArcadeShipSettings _settings;
 
-    private IFireBulletSystem _fireBulletSystem;
+    private ITurretSystem _fireBulletSystem;
 
     private Transform _playerRoot;
     private float _gameAreaSize;
@@ -18,7 +18,7 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
     private GameObject _playerPrefab;
 
     private PlayerShipController _player;
-    private List<IFireSource> _fireSoruces;
+    private List<ITurret> _fireSoruces;
     private bool _isInitialized;
 
     private const string BASE_SHIP_PREFAB_NAME = "Game/GameAssets/SpaceArcade/Ship/Ship02";
@@ -28,7 +28,7 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
     [Inject]
     private void Construct(
         SpaceArcadeShipSettings shipSettings,
-        IFireBulletSystem fireBulletSystem
+        ITurretSystem fireBulletSystem
         )
     {
         _settings = shipSettings;
@@ -45,7 +45,7 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
 
         _playerPrefab = await Addressables.LoadAssetAsync<GameObject>(BASE_SHIP_PREFAB_NAME);
 
-        _fireSoruces = new List<IFireSource>();
+        _fireSoruces = new List<ITurret>();
 
         _isInitialized = true;
     }
@@ -72,9 +72,15 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
             Speed = 30f,
         };
 
+        var turretModel = new TurretModel()
+        {
+            FireSpeed = 0.2f,
+            BulletModel = bulletModel,
+        };
+
         foreach(var shipFireSpot in _player.FireSources)
         {
-            var newFireSource = await _fireBulletSystem.CreateFireSourceAsync(shipFireSpot, bulletModel);
+            var newFireSource = await _fireBulletSystem.CreateFireSourceAsync(shipFireSpot, turretModel);
             _fireSoruces.Add(newFireSource);
         }
     }
@@ -124,32 +130,12 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
         };
 
         playerShip.SetMoveArea(moveArea);
-
-        var inputMap = new PlayerShipController.InputMap
-        {
-            MoveInputAction = _settings.MoveInputAction,
-            FireInputAction = _settings.FireInputAction,
-        };
-
-        playerShip.OnFire += HandlePlayerFire;
-
-        playerShip.SetInputMap(inputMap);
         playerShip.SetMovementSpeed(_settings.ShipMovementSpeed);
     }
 
     private void DeinitializeShip(PlayerShipController playerShip)
     {
-        playerShip.SetInputMap(null);
         playerShip.SetMovementSpeed(0);
-        playerShip.OnFire -= HandlePlayerFire;
-    }
-
-    private void HandlePlayerFire()
-    {
-        foreach(var fireSource in _fireSoruces)
-        {
-            fireSource.Fire();
-        }
     }
 
     public void Update(float deltaTime)
@@ -157,6 +143,28 @@ public class SpaceArcadePlayerShipSystem : ISpaceArcadePlayerShipSystem
         if (!_isInitialized)
         {
             return;
+        }
+
+        UpdateShipInput(deltaTime);
+    }
+
+    private void UpdateShipInput(float deltaTime)
+    {
+        var moveVector = _settings.MoveInputAction.action.ReadValue<Vector2>();
+        _player.UpdateMovement(deltaTime, moveVector);
+
+        var isFireActionActive = _settings.FireInputAction.action.IsPressed();
+        if(isFireActionActive)
+        {
+            UpdatePlayerFire();
+        }
+    }
+
+    private void UpdatePlayerFire()
+    {
+        foreach (var fireSource in _fireSoruces)
+        {
+            fireSource.Fire();
         }
     }
 }

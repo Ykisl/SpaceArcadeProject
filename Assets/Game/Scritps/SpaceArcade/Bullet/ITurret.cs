@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public interface IFireSource : IDisposable
+public interface ITurret : IDisposable
 {
     void Fire();
 }

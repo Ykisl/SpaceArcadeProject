@@ -7,6 +7,7 @@ public class MeteorController : MonoBehaviour, IFireTarget
 
     private float _heathPoints = 0;
     private float _maxHealthPoints = 0;
+    private Vector3 _rotationSpeed = Vector3.zero;
 
     public new Transform transform
     {
@@ -22,6 +23,11 @@ public class MeteorController : MonoBehaviour, IFireTarget
         _heathPoints = healthPoints;
     }
 
+    public void SetRotationSpeed(Vector3 speed)
+    {
+        _rotationSpeed = speed;
+    }
+
     public bool TryHit(EFireBulletType bulletType, float damage, float hitSpeed)
     {
         OnMeteorHit?.Invoke(this);
@@ -34,5 +40,10 @@ public class MeteorController : MonoBehaviour, IFireTarget
         }
 
         return true;
+    }
+
+    private void Update()
+    {
+        transform.Rotate(_rotationSpeed * Time.deltaTime);
     }
 }

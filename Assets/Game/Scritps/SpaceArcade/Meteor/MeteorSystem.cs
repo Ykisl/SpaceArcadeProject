@@ -114,11 +114,14 @@ public class MeteorSystem : IMeteorSystem
         var meteorRotaion = new Vector3(UnityEngine.Random.Range(0, 360f), UnityEngine.Random.Range(0, 360f), UnityEngine.Random.Range(0, 360f));
         meteorTransofrm.rotation = Quaternion.Euler(meteorRotaion);
 
-        var meteorScale = UnityEngine.Random.Range(0.9f, 1.4f);
+        var meteorScale = UnityEngine.Random.Range(0.7f, 1.4f);
         meteorTransofrm.localScale = new Vector3(meteorScale, meteorScale, meteorScale);
 
-        newMeteor.Initialize(METEOR_BASE_HP);
-        newMeteor.gameObject.SetActive(true);
+        var rotationSpeed = new Vector3(UnityEngine.Random.Range(-30f, 30f), UnityEngine.Random.Range(-30f, 30f), UnityEngine.Random.Range(-30f, 30f));
+
+        newMeteor.Initialize(METEOR_BASE_HP * meteorScale);
+        newMeteor.SetRotationSpeed(rotationSpeed);
+        newMeteor.gameObject.SetActive(true);      
 
         _activeMeteors.Add(newMeteor);
     }
@@ -126,6 +129,9 @@ public class MeteorSystem : IMeteorSystem
     private void RemoveMeteor(MeteorController meteor)
     {
         meteor.OnMeteorDestory -= HandleMeteorDestory;
+
+        meteor.SetRotationSpeed(Vector3.zero);
+
         _activeMeteors.Remove(meteor);
         _meteorPool.Recycle(meteor);
     }

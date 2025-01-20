@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Meteor_01
       objectReference: {fileID: 0}
+    - target: {fileID: 8164078558771037576, guid: fcd89396579daa6439f51721cef7e6e6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

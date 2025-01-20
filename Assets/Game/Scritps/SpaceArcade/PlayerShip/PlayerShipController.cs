@@ -5,12 +5,6 @@ using UnityEngine.InputSystem;
 
 public class PlayerShipController : MonoBehaviour
 {
-    public class InputMap
-    {
-        public InputAction MoveInputAction;
-        public InputAction FireInputAction;
-    }
-
     public class MoveArea
     {
         public Vector3 Center;
@@ -27,13 +21,10 @@ public class PlayerShipController : MonoBehaviour
     private Transform _transform;
     private Vector3 _targetAngle = Vector3.zero;
 
-    private InputMap _inputMap;
     private MoveArea _moveArea = new MoveArea();
     private float _moveSpeed = 0;
 
     public IList<Transform> FireSources => _fireSources;
-
-    public event Action OnFire;
 
     public Transform GetTransform()
     {
@@ -41,27 +32,10 @@ public class PlayerShipController : MonoBehaviour
         return _transform;
     }
 
-    private void OnEnable()
-    {
-        if (_inputMap != null)
-        {
-            SubscribeInputMap(_inputMap);
-        }
-    }
-
-    private void OnDisable()
-    {
-        if (_inputMap != null)
-        {
-            UnsubscribeInputMap(_inputMap);
-        }
-    }
-
     private void Update()
     {
         var deltaTime = Time.deltaTime;
 
-        UpdateInput(deltaTime);
         UpdateShipAngle(deltaTime);
     }
 
@@ -88,8 +62,13 @@ public class PlayerShipController : MonoBehaviour
         shipTransform.position = _moveArea.Center;
     }
 
-    private void UpdateMovement(float deltaTime, Vector2 moveVector)
+    public void UpdateMovement(float deltaTime, Vector2 moveVector)
     {
+        if(moveVector.magnitude <= 0)
+        {
+            _targetAngle = Vector3.zero;
+        }
+
         var shipTransform = GetTransform();
 
         var shipPosition = shipTransform.position;
@@ -105,82 +84,6 @@ public class PlayerShipController : MonoBehaviour
     private void UpdateShipAngle(float deltaTime)
     {
         _viewTransform.rotation = Quaternion.Euler(_targetAngle);
-    }
-
-    #endregion
-
-    #region Actions
-
-    private void FireBullet()
-    {
-        OnFire?.Invoke();
-    }
-
-    #endregion
-
-    #region InputMap
-
-    public void SetInputMap(PlayerShipController.InputMap inputMap)
-    {
-        if(_inputMap != null)
-        {
-            UnsubscribeInputMap(_inputMap);
-        }
-
-        _inputMap = inputMap;
-        SubscribeInputMap(_inputMap);
-    }
-
-    private void SubscribeInputMap(InputMap inputMap)
-    {
-        if(inputMap == null)
-        {
-            return;
-        }
-
-        if(inputMap.FireInputAction != null)
-        {
-            inputMap.FireInputAction.performed += HandleInputFire;
-        }
-    }
-
-    public void UnsubscribeInputMap(InputMap inputMap)
-    {
-        if (inputMap == null)
-        {
-            return;
-        }
-
-        if (inputMap.FireInputAction != null)
-        {
-            inputMap.FireInputAction.performed -= HandleInputFire;
-        }
-    }
-
-    private void UpdateInput(float deltaTime)
-    {
-        if (_inputMap == null)
-        {
-            return;
-        }
-
-        if(_inputMap.MoveInputAction != null)
-        {
-            var moveVector = _inputMap.MoveInputAction.ReadValue<Vector2>();
-            if(moveVector.magnitude > 0f)
-            {
-                UpdateMovement(deltaTime, moveVector);
-            }
-            else
-            {
-                _targetAngle = Vector3.zero;
-            }
-        }
-    }
-
-    private void HandleInputFire(InputAction.CallbackContext inputContext)
-    {
-        FireBullet();
     }
 
     #endregion

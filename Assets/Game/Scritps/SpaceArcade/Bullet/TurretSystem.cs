@@ -14,10 +14,10 @@ public class BulletTypeData
 
     public GameObject Prefab;
 }
-public class FireBulletSystem : IFireBulletSystem
+public class TurretSystem : ITurretSystem
 {
     private Dictionary<EFireBulletType, BulletTypeData> _bulletTypes = new Dictionary<EFireBulletType, BulletTypeData>();
-    private List<FireSource> _fireSources = new List<FireSource>();
+    private List<Turret> _fireSources = new List<Turret>();
 
     private Rect _gameZoneRect;
     private bool _isInitialized = false;
@@ -44,7 +44,7 @@ public class FireBulletSystem : IFireBulletSystem
         _bulletTypes ??= new Dictionary<EFireBulletType, BulletTypeData>();
         _bulletTypes.Clear();
 
-        _fireSources ??= new List<FireSource>();
+        _fireSources ??= new List<Turret>();
         _fireSources.Clear();
 
         _isInitialized = true;
@@ -77,13 +77,14 @@ public class FireBulletSystem : IFireBulletSystem
         }
     }
 
-    public async UniTask<IFireSource> CreateFireSourceAsync(Transform fireRoot, FireBulletModel bulletModel)
+    public async UniTask<ITurret> CreateFireSourceAsync(Transform fireRoot, TurretModel turretModel)
     {
         if (!_isInitialized)
         {
             return null;
         }
 
+        var bulletModel = turretModel.BulletModel;
         var bulletTypeData = await GetOrLoadBulletType(bulletModel.BulletType);
 
         var poolParams = new GamePoolParams<Transform>()
@@ -94,7 +95,7 @@ public class FireBulletSystem : IFireBulletSystem
         };
 
         var bulletPool = await _gamePoolSystem.CreatePool<Transform>(poolParams);
-        var newFireSource = new FireSource(_gameZoneRect, fireRoot, bulletModel, bulletPool);
+        var newFireSource = new Turret(_gameZoneRect, fireRoot, turretModel, bulletPool);
         _fireSources.Add(newFireSource);
 
         return newFireSource;
@@ -112,7 +113,7 @@ public class FireBulletSystem : IFireBulletSystem
         _fireSources.Clear();
     }
 
-    private void HandleFireSouceDispose(FireSource source)
+    private void HandleFireSouceDispose(Turret source)
     {
         source.OnDispose -= HandleFireSouceDispose;
         _fireSources.Remove(source);

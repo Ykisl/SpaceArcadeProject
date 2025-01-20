@@ -11,7 +11,7 @@ public class SpaceArcadeSystem : ISpaceArcadeSystem, ITickable
     private ISpaceArcadePlayerShipSystem _playerShipSystem;
     private ISpaceArcadeMoveSystem _moveSystem;
     private IMeteorSystem _meteorSystem;
-    private IFireBulletSystem _fireBulletSystem;
+    private ITurretSystem _fireBulletSystem;
 
     private ISceneHandler _arcadeScene;
     private SpaceArcadeController _spaceArcadeScreen;
@@ -29,7 +29,7 @@ public class SpaceArcadeSystem : ISpaceArcadeSystem, ITickable
         ISpaceArcadePlayerShipSystem playerShipSystem,
         ISpaceArcadeMoveSystem moveSystem,
         IMeteorSystem meteorSystem,
-        IFireBulletSystem fireBulletSystem
+        ITurretSystem fireBulletSystem
         )
     {
         _sceneSystem = sceneSystem;

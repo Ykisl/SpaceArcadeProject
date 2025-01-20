@@ -1,13 +1,13 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public interface IFireBulletSystem
+public interface ITurretSystem
 {
     void Initialize(Rect gameZoneRect);
     void Deinitialize();
 
     void Update(float deltaTime);
 
-    UniTask<IFireSource> CreateFireSourceAsync(Transform fireRoot, FireBulletModel bulletModel);
+    UniTask<ITurret> CreateFireSourceAsync(Transform fireRoot, TurretModel turretModel);
     void ClearAllFireSources();
 }
